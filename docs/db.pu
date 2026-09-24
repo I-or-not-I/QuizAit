@@ -1,0 +1,75 @@
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 50
+
+' Сущности (Таблицы)
+
+entity "User (Пользователь)" as user {
+  * id : int <<PK>>
+  --
+  username : varchar
+  password_hash : varchar
+  created_at : datetime
+}
+
+entity "Deck (Колода)" as deck {
+  * id : int <<PK>>
+  --
+  user_id : int <<FK>>
+  title : varchar
+  description : text
+  created_at : datetime
+}
+
+entity "Flashcard (Карточка)" as card {
+  * id : int <<PK>>
+  --
+  deck_id : int <<FK>>
+  term : varchar
+  definition : text
+  explanation : text  ' Пояснение от ИИ
+  ' Поля для алгоритма SM-2
+  next_review_date : datetime
+  interval : int
+  ease_factor : float
+}
+
+entity "Quiz (Тест)" as quiz {
+  * id : int <<PK>>
+  --
+  deck_id : int <<FK>>
+  created_at : datetime
+}
+
+entity "QuizQuestion (Вопрос теста)" as question {
+  * id : int <<PK>>
+  --
+  quiz_id : int <<FK>>
+  question_text : text
+  question_type : varchar ' single/multiple/open
+  options : json      ' Варианты ответов для теста
+  correct_answer : text
+}
+
+entity "UserProgress (Статистика)" as progress {
+  * id : int <<PK>>
+  --
+  user_id : int <<FK>>
+  card_id : int <<FK>>
+  is_remembered : boolean
+  reviewed_at : datetime
+}
+
+' Связи (Relationships)
+
+user ||--o{ deck : "создает"
+user ||--o{ progress : "имеет"
+deck ||--o{ card : "содержит"
+deck ||--o{ quiz : "генерирует"
+quiz ||--o{ question : "включает"
+card ||--o{ progress : "отслеживается в"
+
+@enduml
